@@ -1,0 +1,34 @@
+premier essais d'ia par réseau de neurones (apprentissage supervisé):
+	- réseau avec des couches [6, 5, 4, 3] + dropout
+	- training avec 100 epochs sur enregistrement de ~2000 entrées 
+	- parametres : loss="mse", optimizer="adam", activation="sigmoid" 
+	- données pas travaillées et représentation non équitable
+-> le réseau se contente de faire une moyenne des outputs = inputs de la voiture : inutilisable
+	(stationne à 10% d'erreur) -> TensorBoard ?
+	
+-question : problème de classification ou non ?
+
+30/09 : premiers succes avec conduite totalement autonome
+-optimisation du calcul de colision (radar/route): liste d'indices puis génération des segments,
+	= moins de calculs
+
+01/11: réseau de neurones fonctionnel écrit en python (keras -> mon code) 
+
+
+Objectifs: 
+Mise en place d'un algorithme génétique pour entraîner le réseau. Pour ce faire :
+-> Population de voiture (multithreading/processing)
+-> optimisation des calcules de collision (multithreading) 
+-> optimisation avec par exemple ce code pour une fonction appliquée à une liste:
+"""
+from multiprocessing.dummy import Pool as ThreadPool 
+pool = ThreadPool(4) 
+results = pool.map(my_function, my_array)
+"""
++ voir cpython
++précalcul des segments de la map
++calcul des equations cartesienne pour les radars
+
+regrouper les fichiers des réseaux de neuronnes (python/keras) y compris artificial_intelligence
+
+
