@@ -10,8 +10,10 @@ from NeuralNetwork.neuralnetwork_class import NeuralNetwork
 
 def selection(scores_list):
 	"returns a list of (index1, index2) corresponding to the selected parents"
+	# scores_list = np.array(scores_list)**2
+	scores_list = np.exp(np.array(scores_list))
 	s = sum(scores_list)
-	prop = np.array(scores_list)/s
+	prop = scores_list/s
 	# print(prop)
 	parents_list = []
 	for _ in range(len(scores_list)):

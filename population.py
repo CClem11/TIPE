@@ -7,8 +7,9 @@ Clément Hinderer
 from car import Car
 import numpy as np
 from NeuralNetwork.neuralnetwork_class import NeuralNetwork
-import time
+import time, os
 from genetic_algorithm import *
+from pickle import Pickler
 
 class Brain():
 	def __init__(self, hidden_layers=[], weights_list=None):
@@ -61,6 +62,23 @@ class Population():
 		self.generation = 1
 		self.average_score = 1
 		
+		#replay
+		self.replay_data = [[]]	# [[[position, angle], best_car_pos]/generation]
+		
+	def save_replay(self, map, filename=""):
+		if filename == "":
+			filename = "generation_"+str(self.generation)
+		filename += ".replay"
+		filename = os.path.join("replay", filename)
+		with open(filename, "wb") as file:
+			p = Pickler(file)
+			p.dump(self.replay_data)
+			p.dump(map)
+			
+	def record_replay_data(self):
+		data = [[(car.pos, car.angle) for car in self.cars], self.car_focused()]
+		self.replay_data[-1].append(data)
+		
 	def set_map(self, map):
 		self.map = map
 		
@@ -85,6 +103,17 @@ class Population():
 	def next_generation(self):
 		"selection and reproduction"
 		self.generation += 1
+		
+		#new list for the replay
+		best_car_index = self.best_car_index()
+		print("best car index :", best_car_index)
+		#focus on the best car of the generation
+		for i, frame in enumerate(self.replay_data[-1]):
+			pos_angle, best_pos = frame
+			pos_best_car_of_generation = self.replay_data[-1][i][0][best_car_index][0]
+			self.replay_data[-1][i][1] = pos_best_car_of_generation
+		self.replay_data.append([])
+		
 		print("Géneration ", self.generation)
 		self.alive = [True]*self.number
 		self.best_score = 0
@@ -101,6 +130,8 @@ class Population():
 		self.time_last_best_score = time.time()
 		# scores = [brain.score for brain in self.brains]
 		# print(scores)
+		
+		
 		
 		
 	def move(self, dt):
@@ -137,6 +168,10 @@ class Population():
 			self.time_last_best_score = time.time()
 			self.best_score = maxi
 		return index
+		
+	def save_best(self):
+		self.brains[self.score()].neuralnetwork.save(os.path.join("model", "ga_bot"))
+		print("best car neural network saved")
 				
 	def is_generation_over(self):
 		next_generation = (time.time() - self.time_last_best_score > self.time_max_generation)
@@ -144,11 +179,15 @@ class Population():
 			# print("New Generation !")
 			self.alive = [False]*self.number
 			self.next_generation()
+			return True
 	
-	def car_focused(self):
+	def best_car_index(self):
 		"returns the position of the best car"
 		best_index = self.score()
-		return np.array(self.cars[best_index].get_pos())
+		return best_index
+		
+	def car_focused(self):
+		return np.array(self.cars[self.score()].get_pos())
 	
 	def show(self, display, center=np.array([])):	
 		for car in self.cars:

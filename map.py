@@ -22,6 +22,9 @@ class Map:
 			# starting point for the car
 			self.initial_pos = (self.road[0][0] + self.road[1][0])/2
 			
+	def get_map(self):
+		return self.road
+			
 	def get_starting_point(self):
 		return self.initial_pos
 	

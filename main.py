@@ -140,6 +140,12 @@ while loop_state:
 		show_text("radars : {}".format(radar_coef), 50, 110, 25)
 		show_text("acc, turn :"+str(outputs), 50, 140, 25)
 		show_text("position :"+str(car_pos), 50, 180, 20)
+		
+		#graphical view of what the car can "see"
+		for i, value in enumerate(radar_coef):
+			color = [value*255]*3
+			pygame.draw.rect(game_display, color, (500+50*i, 30, 50, 50))
+		
 	# else:
 		# print("fps : ", round(clock.get_fps(), 2))
 	time_list.append(time.time())

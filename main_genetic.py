@@ -13,6 +13,7 @@ import time
 import numpy as np
 import sys
 from population import Population
+from matplotlib import pyplot as plt
 
 def show_text(message, x, y, size=34, color=(100, 100, 100)):
 	font = pygame.font.SysFont("Arial Black", size)
@@ -21,7 +22,7 @@ def show_text(message, x, y, size=34, color=(100, 100, 100)):
 	
 	
 #Create the graphical interface
-# window = (800, 450)
+window = (800, 450)
 # window = (1000, 500)
 window = (1600, 900)
 window_center = np.array(window)/2
@@ -45,6 +46,9 @@ pop.create_random_pop()
 
 #sysargv
 show_timelist = "time" in sys.argv
+
+#graph
+average_score = [1]
 
 #################################	Main Loop 	####################################
 clock = pygame.time.Clock()
@@ -70,8 +74,9 @@ while loop_state:
 	fixed_time = 1/20
 	# pop.move(time_move*10**(-3)*time_factor)
 	pop.move(fixed_time)
-	pop.is_generation_over()
-	
+	pop.record_replay_data()
+	if pop.is_generation_over():
+		average_score.append(pop.average_score)
 	#	details 
 	show_text("Generation {}".format(pop.generation), 20, 30)
 	show_text("Average score :{}".format(pop.average_score), 20, 70)
@@ -90,7 +95,16 @@ while loop_state:
 		msg = "{} "*(len(time_list)-1)
 		print(msg.format(*[10**3*round(time_list[i+1]-time_list[i], 4) for i in range(len(time_list)-1)]))
 		
+		
+
+pop.save_best()
+pop.save_replay(map.get_map())
 #to close properly pygame
 pygame.quit()
 
+#plot the average_score
+plt.plot(average_score)
+plt.title("Average score")
+plt.xlabel("generation")
+plt.show()
 
