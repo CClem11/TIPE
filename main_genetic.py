@@ -46,7 +46,7 @@ pop.create_random_pop()
 
 #sysargv
 show_timelist = "time" in sys.argv
-
+console_mode = "console" in sys.argv
 #graph
 average_score = [1]
 
@@ -77,23 +77,24 @@ while loop_state:
 	pop.record_replay_data()
 	if pop.is_generation_over():
 		average_score.append(pop.average_score)
-	#	details 
-	show_text("Generation {}".format(pop.generation), 20, 30)
-	show_text("Average score :{}".format(pop.average_score), 20, 70)
-	
-	#	Show functions
-	best_car_pos = pop.car_focused()
-	center = window_center-best_car_pos
-	map.show(game_display, center=center)
-	pop.show(game_display, center)
-	# 	display update 
-	clock.tick(fps)
-	pygame.display.update()
-	game_display.fill((255, 255, 255))
-	time_list.append(time.time())
-	if show_timelist:
-		msg = "{} "*(len(time_list)-1)
-		print(msg.format(*[10**3*round(time_list[i+1]-time_list[i], 4) for i in range(len(time_list)-1)]))
+		
+	if not console_mode:
+		#	details 
+		show_text("Generation {}".format(pop.generation), 20, 30)
+		show_text("Average score :{}".format(pop.average_score), 20, 70)
+		#	Show functions
+		best_car_pos = pop.car_focused()
+		center = window_center-best_car_pos
+		map.show(game_display, center=center)
+		pop.show(game_display, center)
+		# 	display update 
+		clock.tick(fps)
+		pygame.display.update()
+		game_display.fill((255, 255, 255))
+		time_list.append(time.time())
+		if show_timelist:
+			msg = "{} "*(len(time_list)-1)
+			print(msg.format(*[10**3*round(time_list[i+1]-time_list[i], 4) for i in range(len(time_list)-1)]))
 		
 		
 
