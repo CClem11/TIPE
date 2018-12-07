@@ -20,6 +20,7 @@ class Brain():
 			# print(self.neuralnetwork.get_weights_bias())
 		#for Genetic Algorithm
 		self.score = 1
+		self.score_list = [1]
 		self.last_distance = 0
 		
 	def predict(self, inputs):
@@ -39,6 +40,9 @@ class Brain():
 			self.last_distance = new_distance
 		else:
 			pass
+			
+	def add_score_to_list(self):
+		self.score_list.append(self.score)
 			
 	def get_dna(self):
 		return self.neuralnetwork.get_weights_bias()
@@ -105,8 +109,12 @@ class Population():
 		self.generation += 1
 		
 		#new list for the replay
-		best_car_index = self.best_car_index()
-		print("best car index :", best_car_index)
+		best_score = self.score()[1] #the first one to reach this score is considered the best
+		generation_with_best_score = len(self.replay_data[-1]) - 1
+		while generation_with_best_score >= 0 and best_score in [b.score_list[generation_with_best_score] for b in self.brains]:
+			generation_with_best_score -= 1
+		best_car_index = [b.score_list[generation_with_best_score+1] for b in self.brains].index(best_score)
+		
 		#focus on the best car of the generation
 		for i, frame in enumerate(self.replay_data[-1]):
 			pos_angle, best_pos = frame
@@ -119,8 +127,9 @@ class Population():
 		self.best_score = 0
 		scores = [brain.score for brain in self.brains]
 		self.average_score = np.mean(scores)
-		print("scores :", scores)
-		print("average score :", self.average_score)
+		max_score = max(scores)
+		# print("scores :", scores)
+		print("average score : {} and max score : {}".format(self.average_score, max_score))
 		parents_pair = selection(scores)
 		selected = [parent for pair in parents_pair for parent in pair]
 		# print("parent :", [selected.count(i) for i in range(self.number)])
@@ -130,8 +139,6 @@ class Population():
 		self.time_last_best_score = time.time()
 		# scores = [brain.score for brain in self.brains]
 		# print(scores)
-		
-		
 		
 		
 	def move(self, dt):
@@ -151,11 +158,13 @@ class Population():
 					car.control_ai(*prediction)
 					car.move(dt)
 					# print("car {} and index : {}".format(i, road_index))
+		for b in self.brains:
+			b.add_score_to_list()
 				
 	def score(self):
 		"""
 		evaluate each car by giving a score in function of distance travelled
-		returns the index of the best car
+		returns (the index of the best car, bests_score)
 		"""
 		maxi, index = 0, 0
 		for i, car in enumerate(self.cars):
@@ -167,10 +176,10 @@ class Population():
 		if maxi > self.best_score:
 			self.time_last_best_score = time.time()
 			self.best_score = maxi
-		return index
+		return index, self.best_score
 		
 	def save_best(self):
-		self.brains[self.score()].neuralnetwork.save(os.path.join("model", "ga_bot"))
+		self.brains[self.score()[0]].neuralnetwork.save(os.path.join("model", "ga_bot"))
 		print("best car neural network saved")
 				
 	def is_generation_over(self):
@@ -183,11 +192,11 @@ class Population():
 	
 	def best_car_index(self):
 		"returns the position of the best car"
-		best_index = self.score()
+		best_index = self.score()[0]
 		return best_index
 		
 	def car_focused(self):
-		return np.array(self.cars[self.score()].get_pos())
+		return np.array(self.cars[self.score()[0]].get_pos())
 	
 	def show(self, display, center=np.array([])):	
 		for car in self.cars:
